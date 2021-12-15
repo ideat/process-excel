@@ -1,0 +1,122 @@
+package com.nexion.process.backend.entity;
+
+import lombok.Data;
+
+import java.time.LocalDate;
+
+@Data
+public class GtzDestiny {
+
+    private Integer id_unico;
+    private Integer id_epsa;
+    private String nombre_archivo_excel;
+    private String periodo_reporte;
+    private String fecha_reporte; //left in blank
+    private String id_lectura;
+    private Integer id_reg_muestra;
+    private String unidad_analisis;
+    private String sector_unidad_analisis;
+    private String codigo_punto;
+    private String lugar_muestreo;
+    private String fecha_muestra;
+    private String latitud_muestra;
+    private String longitud_muestra;
+    private String altura_muestra;
+    private String id_tipo_punto_muestra;
+    private String metodo_utilizado;
+    private String unidad_muestra;
+    private String valores_max_nb512;
+
+    private String cm_ph;
+    private String um_ph;
+    private String cm_temperatura;
+    private String um_temperatura;
+    private String cm_conductividad;
+    private String um_conductividad;
+    private String cm_turbiedad;
+    private String um_turbiedad;
+    private String cm_cloro_residual;
+    private String um_cloro_residual;
+    private String cm_coliforme_termotolerante_u1;
+    private String um_coliforme_termotolerante_u1;
+    private String cm_escherichia_coli_u1;
+    private String um_escherichia_coli_u1;
+
+    private String cb_fis_color;
+    private String um_fis_color;
+    private String cb_fis_sabor_olor_aceptables;
+    private String um_fis_sabor_olor_aceptables;
+    private String cb_quim_solidos_disueltos_totales;
+    private String um_quim_solidos_disueltos_totales;
+    private String cb_quim_alcalinidad_total;
+    private String um_quim_alcalinidad_total;
+    private String cb_quim_calcio;
+    private String um_quim_calcio;
+    private String cb_quim_cloruros;
+    private String um_quim_cloruros;
+    private String cb_quim_dureza_total;
+    private String um_quim_dureza_total;
+    private String cb_quim_hierro_total;
+    private String um_quim_hierro_total;
+    private String cb_quim_magnesio;
+    private String um_quim_magnesio;
+    private String cb_quim_manganeso;
+    private String um_quim_manganeso;
+    private String cb_quim_nitritos;
+    private String um_quim_nitritos;
+    private String cb_quim_nitratos;
+    private String um_quim_nitratos;
+    private String cb_quim_sulfatos;
+    private String um_quim_sulfatos;
+    private String cb_micro_heterotroficas;
+    private String um_micro_heterotroficas;
+
+    private String cc_quim_inor_aluminio;
+    private String um_quim_inor_aluminio;
+    private String cc_quim_inor_amonio;
+    private String um_quim_inor_amonio;
+    private String cc_quim_inor_arsenico;
+    private String um_quim_inor_arsenico;
+    private String cc_quim_inor_boro;
+    private String um_quim_inor_boro;
+    private String cc_quim_inor_cadmio;
+    private String um_quim_inor_cadmio;
+    private String cc_quim_inor_cobre;
+    private String um_quim_inor_cobre;
+    private String cc_quim_inor_fluoruro;
+    private String um_quim_inor_fluoruro;
+    private String cc_quim_inor_indice_langelier;
+    private String um_quim_inor_indice_langelier;
+    private String cc_quim_inor_plomo;
+    private String um_quim_inor_plomo;
+    private String cc_quim_inor_sodio;
+    private String um_quim_inor_sodio;
+    private String cc_quim_inor_zinc;
+    private String um_quim_inor_zinc;
+    private String cc_biobac_coliformes_totales;
+    private String um_biobac_coliformes_totales;
+    private String cc_biobac;
+    private String um_biobac;
+    private String cc_biobac_coliformes_termotolerantes;
+    private String um_biobac_coliformes_termotolerantes;
+    private String cc_biobac_escherichia_coli;
+    private String um_biobac_escherichia_coli;
+    private String cc_biobac_pseudomonas_aeruginosa;
+    private String um_biobac_pseudomonas_aeruginosa;
+    private String cc_biobac_clostridium_perfringens;
+    private String um_biobac_clostridium_perfringens;
+    private String cc_micropar_giarda_ausencia;
+    private String um_micropar_giarda_ausencia;
+    private String cc_micropar_cryptosporidium_ausencia;
+    private String um_micropar_cryptosporidium_ausencia;
+    private String cc_micropar_amebas_ausencia;
+    private String um_micropar_amebas_ausencia;
+    private String cc_thm_cloroformo;
+    private String um_thm_cloroformo;
+    private String cc_thm_bromoformo;
+    private String um_thm_bromoformo;
+    private String cc_thm_bromo_diclorometano;
+    private String um_thm_bromo_diclorometano;
+    private String cc_thm_dibromo_clorometano;
+    private String um_thm_dibromo_clorometano;
+}
