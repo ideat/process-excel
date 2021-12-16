@@ -130,7 +130,7 @@ public class Utils {
         Integer rss = getRow(conf.getCellStartSampleName());
         Integer css = getCol(conf.getCellStartSampleName());
         String valueSampleName = dataFormatter.formatCellValue(sheet.getRow(rss).getCell(css));
-        String sampleName = processSample(valueSampleName,conf.getTypeSample());
+        String sampleName = processSample(valueSampleName,conf.getTypeSample(),conf.getStaticSampleName());
 
         Integer rps = 0;
         Integer cps =0;
@@ -166,7 +166,7 @@ public class Utils {
            //Nombre muestra
            if (controlSampleName == conf.getColSpaceSampleName()) {
                valueSampleName = dataFormatter.formatCellValue(sheet.getRow(rss).getCell(css+f));
-               sampleName = processSample(valueSampleName, conf.getTypeSample());
+               sampleName = processSample(valueSampleName, conf.getTypeSample(),conf.getStaticSampleName());
                controlSampleName = 0;
                posSample++;
            } else {
@@ -178,7 +178,8 @@ public class Utils {
             if(conf.getStaticPointSample().equals("false")) {
                 rps = getRow(conf.getCellPointSample());
                 cps = getCol(conf.getCellPointSample());
-                pointSample = sheet.getRow(rps).getCell(cps+f).getStringCellValue().replace("Ã±","ñ");
+                String pointS = dataFormatter.formatCellValue(sheet.getRow(rps).getCell(cps+f));
+                pointSample = pointS.replace("Ã±","ñ");
             }else{
                 pointSample = conf.getCellPointSample();
             }
@@ -238,6 +239,10 @@ public class Utils {
                         String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCm_temperatura(valueTemp);
                         gtzDestiny.setUm_temperatura(valueUnitMeasure);
+                    }else if (nameParameter.toUpperCase().contains("ECHERICHIA") || nameParameter.toUpperCase().contains("ESCHERICHIA")) {
+                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        gtzDestiny.setCm_escherichia_coli_u1(valueTemp);
+                        gtzDestiny.setUm_escherichia_coli_u1(valueUnitMeasure);
                     }
                 }
                 //CONTROL BASICO
@@ -314,7 +319,8 @@ public class Utils {
                         String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCc_quim_inor_cobre(valueTemp);
                         gtzDestiny.setUm_quim_inor_cobre(valueUnitMeasure);
-                    } else if (nameParameter.toUpperCase().contains("FLORURO") || nameParameter.toUpperCase().contains("FLUORURO")) {
+                    } else if (nameParameter.toUpperCase().contains("FLORURO") || nameParameter.toUpperCase().contains("FLUORURO")
+                            || nameParameter.toUpperCase().contains("FLUORUROS")) {
                         String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCc_quim_inor_fluoruro(valueTemp);
                         gtzDestiny.setUm_quim_inor_fluoruro(valueUnitMeasure);
@@ -352,7 +358,7 @@ public class Utils {
                                 String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_quim_inor_sodio(valueTemp);
                                 gtzDestiny.setUm_quim_inor_sodio(valueUnitMeasure);
-                            } else if (nameParameter.toUpperCase().contains("ESCHERICHIA")) {
+                            } else if (nameParameter.toUpperCase().contains("ESCHERICHIA") || nameParameter.toUpperCase().contains("ECHERICHIA")) {
                                 String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_biobac_escherichia_coli(valueTemp);
                                 gtzDestiny.setUm_biobac_escherichia_coli(valueUnitMeasure);
@@ -407,16 +413,18 @@ public class Utils {
         return gtzDestinyList;
     }
 
-    private String processSample(String sampleName, String typeSample){
+    private String processSample(String sampleName, String typeSample, String staticSampleName){
         if(typeSample.equals("simple")){
             return sampleName.replace("\n","");
         }else if(typeSample.equals("process")){
             return "Nombre no procesado";
         }else if(typeSample.equals("number")){
             return "Muestra-"+sampleName;
+        }else if(typeSample.equals("static")){
+            return staticSampleName;
         }
 
-        return "muestra deconocido";
+        return staticSampleName;
     }
 
     private String processDate(String date, String typeDate, String staticDate, String conditionProcess, String year){
@@ -434,8 +442,10 @@ public class Utils {
             }
         }else if(typeDate.equals("year")){
             return "15/12/"+year;
+        }else if(typeDate.equals("month-day")){
+            return date +"/" + year;
         }else if(typeDate.equals("month")){
-            return "pendiente mes";
+            return "15/" +date +"/" + year;
         }else if(typeDate.equals("date")){
             return date;
         }else if(typeDate.equals("regex")){
