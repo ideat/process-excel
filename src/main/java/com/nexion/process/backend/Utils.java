@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nexion.process.backend.entity.ConfigSheet;
 import com.nexion.process.backend.entity.GtzDestiny;
 import lombok.SneakyThrows;
-import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -19,6 +19,8 @@ import org.supercsv.prefs.CsvPreference;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -165,7 +167,7 @@ public class Utils {
            }
            //Nombre muestra
            if (controlSampleName == conf.getColSpaceSampleName()) {
-               valueSampleName = dataFormatter.formatCellValue(sheet.getRow(rss).getCell(css+f));
+               valueSampleName = processCellValue(sheet.getRow(rss).getCell(css+f)); //dataFormatter.formatCellValue(sheet.getRow(rss).getCell(css+f));
                sampleName = processSample(valueSampleName, conf.getTypeSample(),conf.getStaticSampleName());
                controlSampleName = 0;
                posSample++;
@@ -175,12 +177,18 @@ public class Utils {
            }
 
            //Punto de muestra
+            if(conf.getStaticPointSample().equals("split0")){
+                rps = getRow(conf.getCellPointSample());
+                cps = getCol(conf.getCellPointSample());
+                String pointS = processCellValue(sheet.getRow(rps).getCell(cps+f));
+                pointSample = pointS.split("\\(")[0];
+            }else
             if(conf.getStaticPointSample().equals("false")) {
                 rps = getRow(conf.getCellPointSample());
                 cps = getCol(conf.getCellPointSample());
-                String pointS = dataFormatter.formatCellValue(sheet.getRow(rps).getCell(cps+f));
+                String pointS = processCellValue(sheet.getRow(rps).getCell(cps+f));// dataFormatter.formatCellValue(sheet.getRow(rps).getCell(cps+f));
                 pointSample = pointS.replace("Ã±","ñ");
-            }else{
+            }else {
                 pointSample = conf.getCellPointSample();
             }
 
@@ -191,7 +199,7 @@ public class Utils {
            }else{
                Integer rsl = getRow(conf.getCellSamplingLocation());
                Integer csl = getCol(conf.getCellSamplingLocation());
-               samplingLocation = sheet.getRow(rsl).getCell(csl).getStringCellValue();
+               samplingLocation = processCellValue( sheet.getRow(rsl).getCell(csl)); // sheet.getRow(rsl).getCell(csl).getStringCellValue();
            }
 
             //Cicle for row parameters
@@ -209,38 +217,38 @@ public class Utils {
                 //Unidades
                 Integer rum = getRow(conf.getCellUnitMeasure());
                 Integer cum = getCol(conf.getCellUnitMeasure());
-                String valueUnitMeasure = dataFormatter.formatCellValue(sheet.getRow(rum+i).getCell(cum));
+                String valueUnitMeasure =  dataFormatter.formatCellValue(sheet.getRow(rum+i).getCell(cum));
 
 
 
                 //CONTROL MINIMO
                 if(category.toUpperCase().contains("MINIMO")) {
                     if (nameParameter.toUpperCase().contains("PH")) {
-                        String valuePh = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valuePh =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCm_ph(valuePh);
                         gtzDestiny.setUm_ph(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("CONDUCTIVIDAD")) {
-                        String valueCond = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueCond =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCm_conductividad(valueCond);
                         gtzDestiny.setUm_conductividad(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("TURVIEDAD") || nameParameter.toUpperCase().contains("TURBIEDAD")) {
-                        String valueTurb = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTurb =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCm_turbiedad(valueTurb);
                         gtzDestiny.setUm_turbiedad(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("CLORO")) {
-                        String valueCloro = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueCloro =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCm_cloro_residual(valueCloro);
                         gtzDestiny.setUm_cloro_residual(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("COLIFORMES") || nameParameter.toUpperCase().contains("FECALES")) {
-                        String valueColi = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueColi =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCm_coliforme_termotolerante_u1(valueColi);
                         gtzDestiny.setUm_coliforme_termotolerante_u1(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("TEMPERATURA")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCm_temperatura(valueTemp);
                         gtzDestiny.setUm_temperatura(valueUnitMeasure);
                     }else if (nameParameter.toUpperCase().contains("ECHERICHIA") || nameParameter.toUpperCase().contains("ESCHERICHIA")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); // dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCm_escherichia_coli_u1(valueTemp);
                         gtzDestiny.setUm_escherichia_coli_u1(valueUnitMeasure);
                     }
@@ -248,154 +256,158 @@ public class Utils {
                 //CONTROL BASICO
                 if(category.toUpperCase().contains("BASICO") || category.toUpperCase().contains("BÁSICO")) {
                     if (nameParameter.toUpperCase().contains("COLOR")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f));// dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCb_fis_color(valueTemp);
                         gtzDestiny.setUm_fis_color(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("SABOR")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f));// dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCb_fis_sabor_olor_aceptables(valueTemp);
                         gtzDestiny.setUm_fis_sabor_olor_aceptables(valueUnitMeasure);
-                    } else if (nameParameter.toUpperCase().contains("SOLIDOS")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                    } else if (nameParameter.toUpperCase().contains("SOLIDOS") || nameParameter.toUpperCase().contains("SOLIDO") || nameParameter.toUpperCase().contains("SÓLIDOS")) {
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCb_quim_solidos_disueltos_totales(valueTemp);
                         gtzDestiny.setUm_quim_solidos_disueltos_totales(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("ALCALINIDAD")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCb_quim_alcalinidad_total(valueTemp);
                         gtzDestiny.setUm_quim_alcalinidad_total(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("CALCIO")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCb_quim_calcio(valueTemp);
                         gtzDestiny.setUm_quim_calcio(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("CLORUROS")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f));// dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCb_quim_cloruros(valueTemp);
                         gtzDestiny.setUm_quim_cloruros(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("DUREZA")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCb_quim_dureza_total(valueTemp);
                         gtzDestiny.setUm_quim_dureza_total(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("HIERRO")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCb_quim_hierro_total(valueTemp);
                         gtzDestiny.setUm_quim_hierro_total(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("MAGNESIO")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp = processCellValue(sheet.getRow(rvs + i).getCell(cvs + f));//dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCb_quim_magnesio(valueTemp);
                         gtzDestiny.setUm_quim_magnesio(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("MANGANESO")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCb_quim_manganeso(valueTemp);
                         gtzDestiny.setUm_quim_manganeso(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("SODIO")) { //TODO: SE CAMBIO AL CONTROL COMPLEMENTARIO
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f));// dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCc_quim_inor_sodio(valueTemp);
                         gtzDestiny.setUm_quim_inor_sodio(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("SULFATOS")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f));// dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCb_quim_sulfatos(valueTemp);
                         gtzDestiny.setUm_quim_sulfatos(valueUnitMeasure);
+                    }else if (nameParameter.toUpperCase().contains("HETEROTROFICAS") || nameParameter.toUpperCase().contains("HETEROTROFICA")) {
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f));// dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        gtzDestiny.setCb_micro_heterotroficas(valueTemp);
+                        gtzDestiny.setUm_micro_heterotroficas(valueUnitMeasure);
                     }
                 }
                 //COMPLEMENTARIO
                 if(category.toUpperCase().contains("COMPLEMENTARIO") || category.toUpperCase().contains("COMPLEMENTARIOS")) {
                     if (nameParameter.toUpperCase().contains("ALUMINIO")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCc_quim_inor_aluminio(valueTemp);
                         gtzDestiny.setUm_quim_inor_aluminio(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("AMONIACO")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCc_quim_inor_amonio(valueTemp);
                         gtzDestiny.setUm_quim_inor_amonio(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("ARSENICO")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCc_quim_inor_arsenico(valueTemp);
                         gtzDestiny.setUm_quim_inor_arsenico(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("BORO")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCc_quim_inor_boro(valueTemp);
                         gtzDestiny.setUm_quim_inor_boro(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("COBRE")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f));// dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCc_quim_inor_cobre(valueTemp);
                         gtzDestiny.setUm_quim_inor_cobre(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("FLORURO") || nameParameter.toUpperCase().contains("FLUORURO")
                             || nameParameter.toUpperCase().contains("FLUORUROS")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f));  // dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCc_quim_inor_fluoruro(valueTemp);
                         gtzDestiny.setUm_quim_inor_fluoruro(valueUnitMeasure);
                     } else if (nameParameter.toUpperCase().contains("LANGELIER") || nameParameter.toUpperCase().contains("FLUORURO")) {
-                        String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                        String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCc_quim_inor_indice_langelier(valueTemp);
                         gtzDestiny.setUm_quim_inor_indice_langelier(valueUnitMeasure);
                     } else //TODO: Nitritos esta en control basico de excel
                         if (nameParameter.toUpperCase().contains("NITRITO") || nameParameter.toUpperCase().contains("NITRITOS")) {
-                            String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                            String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                             gtzDestiny.setCb_quim_nitritos(valueTemp);
                             gtzDestiny.setUm_quim_nitritos(valueUnitMeasure);
                         } else//TODO: Nitratos esta en control basico de excel
                             if (nameParameter.toUpperCase().contains("NITRATO") || nameParameter.toUpperCase().contains("NITRATOS")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCb_quim_nitratos(valueTemp);
                                 gtzDestiny.setUm_quim_nitritos(valueUnitMeasure);
                             } else if (nameParameter.toUpperCase().contains("PLOMO")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_quim_inor_plomo(valueTemp);
                                 gtzDestiny.setUm_quim_inor_plomo(valueUnitMeasure);
                             } else if (nameParameter.toUpperCase().contains("ZINC")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_quim_inor_zinc(valueTemp);
                                 gtzDestiny.setUm_quim_inor_zinc(valueUnitMeasure);
                             } else if (nameParameter.toUpperCase().contains("COLFORMES TOTALES") || nameParameter.toUpperCase().contains("COLIFORMES TOTALES")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_biobac_coliformes_totales(valueTemp);
                                 gtzDestiny.setUm_biobac_coliformes_totales(valueUnitMeasure);
                             } else if (nameParameter.toUpperCase().contains("SODIO")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_quim_inor_sodio(valueTemp);
                                 gtzDestiny.setUm_quim_inor_sodio(valueUnitMeasure);
                             } else if (nameParameter.toUpperCase().contains("COLIFORMES TERMO TOLERANTE") || nameParameter.toUpperCase().contains("COLIFORME TERMO TOLERANTE")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_quim_inor_sodio(valueTemp);
                                 gtzDestiny.setUm_quim_inor_sodio(valueUnitMeasure);
                             } else if (nameParameter.toUpperCase().contains("ESCHERICHIA") || nameParameter.toUpperCase().contains("ECHERICHIA")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f));// dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_biobac_escherichia_coli(valueTemp);
                                 gtzDestiny.setUm_biobac_escherichia_coli(valueUnitMeasure);
                             } else if (nameParameter.toUpperCase().contains("PSEDONOMAS") || nameParameter.toUpperCase().contains("AEROGINOSA")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_biobac_pseudomonas_aeruginosa(valueTemp);
                                 gtzDestiny.setUm_biobac_pseudomonas_aeruginosa(valueUnitMeasure);
                             } else if (nameParameter.toUpperCase().contains("CLOSTRIDIUM") || nameParameter.toUpperCase().contains("PERFRINGENS")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_biobac_clostridium_perfringens(valueTemp);
                                 gtzDestiny.setUm_biobac_clostridium_perfringens(valueUnitMeasure);
                             } else if (nameParameter.toUpperCase().contains("GIARDIA") || nameParameter.toUpperCase().contains("GIARDIAS")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_micropar_giarda_ausencia(valueTemp);
                                 gtzDestiny.setUm_micropar_giarda_ausencia(valueUnitMeasure);
                             } else if (nameParameter.toUpperCase().contains("CRYPTOSPORIDIUM") || nameParameter.toUpperCase().contains("CRYPTOSPOR")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_micropar_cryptosporidium_ausencia(valueTemp);
                                 gtzDestiny.setUm_micropar_cryptosporidium_ausencia(valueUnitMeasure);
                             } else if (nameParameter.toUpperCase().contains("AMEBAS") || nameParameter.toUpperCase().contains("AMEBA")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_micropar_amebas_ausencia(valueTemp);
                                 gtzDestiny.setUm_micropar_amebas_ausencia(valueUnitMeasure);
                             } else if (nameParameter.toUpperCase().contains("CLOROFORMO") || nameParameter.toUpperCase().contains("CLOROFOR")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_thm_cloroformo(valueTemp);
                                 gtzDestiny.setUm_thm_cloroformo(valueUnitMeasure);
                             } else if (nameParameter.toUpperCase().contains("BROMOFORMO") || nameParameter.toUpperCase().contains("BROMOFOR")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f));// dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_thm_bromoformo(valueTemp);
                                 gtzDestiny.setUm_thm_bromoformo(valueUnitMeasure);
                             } else if (nameParameter.toUpperCase().contains("DICLOROMETANO") || nameParameter.toUpperCase().contains("DICLORO")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_thm_bromo_diclorometano(valueTemp);
                                 gtzDestiny.setUm_thm_bromo_diclorometano(valueUnitMeasure);
                             } else if (nameParameter.toUpperCase().contains("DIBROMO") || nameParameter.toUpperCase().contains("DIBRO")) {
-                                String valueTemp = dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
+                                String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                                 gtzDestiny.setCc_thm_dibromo_clorometano(valueTemp);
                                 gtzDestiny.setUm_thm_dibromo_clorometano(valueUnitMeasure);
                             }
@@ -427,6 +439,33 @@ public class Utils {
         return staticSampleName;
     }
 
+    private String processCellValue(XSSFCell cell){
+        FormulaEvaluator evaluator = myWorkBook.getCreationHelper().createFormulaEvaluator();
+        CellValue cellValue = evaluator.evaluate(cell);
+        String result = "";
+        if(cell!=null && cell.getCellType() == CellType.FORMULA){
+            switch (cell.getCachedFormulaResultType()) {
+                case BOOLEAN:
+//                    System.out.println(cell.getBooleanCellValue());
+                    result = String.valueOf(cell.getBooleanCellValue());
+                    break;
+                case NUMERIC:
+//                    System.out.println(cell.getNumericCellValue());
+                    Double v = cell.getNumericCellValue();
+                    result = String.format("%1$,.2f",v);
+                    break;
+                case STRING:
+//                    System.out.println(cell.getRichStringCellValue());
+                    result = cell.getStringCellValue();
+                    break;
+            }
+        }else{
+            DataFormatter dataFormatter = new DataFormatter();
+            result = dataFormatter.formatCellValue(cell);
+        }
+        return result;
+    }
+
     private String processDate(String date, String typeDate, String staticDate, String conditionProcess, String year){
         if(typeDate.equals("static")){
             return staticDate;
@@ -448,8 +487,22 @@ public class Utils {
             return "15/" +date +"/" + year;
         }else if(typeDate.equals("date")){
             return date;
+        }else if(typeDate.equals("split1")){
+            String v="";
+            String dateStr="";
+            try {
+                String[] ar = conditionProcess.split(",");
+                v = date.split(ar[0])[1].replace(ar[1], "");
+                DateTimeFormatter dateTimeFormatterInput = DateTimeFormatter.ofPattern("dd/MM/yy");
+                DateTimeFormatter dateTimeFormatterOutput = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                LocalDate localDate = LocalDate.parse(v, dateTimeFormatterInput);
+                dateStr = localDate.format(dateTimeFormatterOutput);
+            }catch(Exception e){
+                return v;
+            }
+            return  dateStr;
         }else if(typeDate.equals("regex")){
-            Pattern pattern = Pattern.compile("'(.*?)'");
+            Pattern pattern = Pattern.compile("'^.*\\((.*)\\)$'");
             Matcher matcher = pattern.matcher(date);
             if(matcher.find()){
                 return matcher.group(1);
