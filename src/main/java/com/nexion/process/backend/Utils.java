@@ -484,22 +484,27 @@ public class Utils {
         }else if(typeDate.equals("month-day")){
             return date +"/" + year;
         }else if(typeDate.equals("month")){
-            return "15/" +date +"/" + year;
+
+            String dateStr = "15/" +date +"/" + year;
+            dateStr = convertDateFormat(dateStr,"dd/MMM/yyyy","dd/MM/yyyy");
+
+            return dateStr;
         }else if(typeDate.equals("date")){
             return date;
         }else if(typeDate.equals("split1")){
             String v="";
             String dateStr="";
-            try {
+//            try {
                 String[] ar = conditionProcess.split(",");
                 v = date.split(ar[0])[1].replace(ar[1], "");
-                DateTimeFormatter dateTimeFormatterInput = DateTimeFormatter.ofPattern("dd/MM/yy");
-                DateTimeFormatter dateTimeFormatterOutput = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-                LocalDate localDate = LocalDate.parse(v, dateTimeFormatterInput);
-                dateStr = localDate.format(dateTimeFormatterOutput);
-            }catch(Exception e){
-                return v;
-            }
+//                DateTimeFormatter dateTimeFormatterInput = DateTimeFormatter.ofPattern("dd/MM/yy");
+//                DateTimeFormatter dateTimeFormatterOutput = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+//                LocalDate localDate = LocalDate.parse(v, dateTimeFormatterInput);
+//                dateStr = localDate.format(dateTimeFormatterOutput);
+//            }catch(Exception e){
+//                return v;
+//            }
+            dateStr = convertDateFormat(v,"dd/MM/yy","dd/MM/yyyy");
             return  dateStr;
         }else if(typeDate.equals("regex")){
             Pattern pattern = Pattern.compile("'^.*\\((.*)\\)$'");
@@ -509,6 +514,18 @@ public class Utils {
             }
         }
         return "no identificado";
+    }
+
+    private String convertDateFormat(String date, String formatInput, String formatOutput){
+        try {
+            DateTimeFormatter dateTimeFormatterInput = DateTimeFormatter.ofPattern(formatInput);
+            DateTimeFormatter dateTimeFormatterOutput = DateTimeFormatter.ofPattern(formatOutput);
+            LocalDate localDate = LocalDate.parse(date, dateTimeFormatterInput);
+            String dateStr = localDate.format(dateTimeFormatterOutput);
+            return dateStr;
+        }catch(Exception e){
+            return date;
+        }
     }
 
     public void exportCVS(List<GtzDestiny> gtzDestinyList, String csvFile) throws IOException {
