@@ -192,7 +192,7 @@ public class Utils {
                 rps = getRow(conf.getCellPointSample());
                 cps = getCol(conf.getCellPointSample());
                 String pointS = processCellValue(sheet.getRow(rps).getCell(cps+f));// dataFormatter.formatCellValue(sheet.getRow(rps).getCell(cps+f));
-                pointSample = pointS.replace("Ã±","ñ");
+                pointSample = pointS.replace("Ã±","ñ").replace("\n","");
             }else {
                 pointSample = conf.getCellPointSample();
             }
@@ -341,7 +341,7 @@ public class Utils {
                         String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f));  // dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCc_quim_inor_fluoruro(valueTemp);
                         gtzDestiny.setUm_quim_inor_fluoruro(valueUnitMeasure);
-                    } else if (nameParameter.toUpperCase().contains("LANGELIER") || nameParameter.toUpperCase().contains("FLUORURO")) {
+                    } else if (nameParameter.toUpperCase().contains("LANGELIER") ) {
                         String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCc_quim_inor_indice_langelier(valueTemp);
                         gtzDestiny.setUm_quim_inor_indice_langelier(valueUnitMeasure);
@@ -505,7 +505,7 @@ public class Utils {
                 rps = getRow(conf.getCellPointSample());
                 cps = getCol(conf.getCellPointSample());
                 String pointS = processCellValue(sheet.getRow(rps).getCell(cps+f));// dataFormatter.formatCellValue(sheet.getRow(rps).getCell(cps+f));
-                pointSample = pointS.replace("Ã±","ñ");
+                pointSample = pointS.replace("Ã±","ñ").replace("\n","");;
             }else {
                 pointSample = conf.getCellPointSample();
             }
@@ -654,7 +654,7 @@ public class Utils {
                         String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f));  // dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCc_quim_inor_fluoruro(valueTemp);
                         gtzDestiny.setUm_quim_inor_fluoruro(valueUnitMeasure);
-                    } else if (nameParameter.toUpperCase().contains("LANGELIER") || nameParameter.toUpperCase().contains("FLUORURO")) {
+                    } else if (nameParameter.toUpperCase().contains("LANGELIER") ) {
                         String valueTemp =  processCellValue(sheet.getRow(rvs + i).getCell(cvs + f)); //dataFormatter.formatCellValue(sheet.getRow(rvs + i).getCell(cvs + f));
                         gtzDestiny.setCc_quim_inor_indice_langelier(valueTemp);
                         gtzDestiny.setUm_quim_inor_indice_langelier(valueUnitMeasure);
@@ -812,16 +812,10 @@ public class Utils {
         }else if(typeDate.equals("split1")){
             String v="";
             String dateStr="";
-//            try {
-                String[] ar = conditionProcess.split(",");
-                v = date.split(ar[0])[1].replace(ar[1], "");
-//                DateTimeFormatter dateTimeFormatterInput = DateTimeFormatter.ofPattern("dd/MM/yy");
-//                DateTimeFormatter dateTimeFormatterOutput = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-//                LocalDate localDate = LocalDate.parse(v, dateTimeFormatterInput);
-//                dateStr = localDate.format(dateTimeFormatterOutput);
-//            }catch(Exception e){
-//                return v;
-//            }
+
+            String[] ar = conditionProcess.split(",");
+            v = date.split(ar[0])[1].replace(ar[1], "");
+
             dateStr = convertDateFormat(v,"dd/MM/yy","dd/MM/yyyy");
             return  dateStr;
         }else if(typeDate.equals("regex")){
