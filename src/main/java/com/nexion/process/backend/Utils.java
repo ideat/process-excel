@@ -5,12 +5,16 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nexion.process.backend.entity.ConfigSheet;
 import com.nexion.process.backend.entity.GtzDestiny;
+import com.nexion.process.backend.entity.WordPlaceSample;
+import com.nexion.process.backend.enums.Months;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.tomcat.jni.Local;
 import org.supercsv.cellprocessor.Optional;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.CsvBeanWriter;
@@ -19,11 +23,13 @@ import org.supercsv.prefs.CsvPreference;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -133,6 +139,7 @@ public class Utils {
         DataFormatter dataFormatter = new DataFormatter();
         String value = dataFormatter.formatCellValue(sheet.getRow(rd).getCell(cd));
         String dateP = processDate(value,typeDate,conf.getStaticDate(),conf.getConditionProcess(),conf.getYear());
+        String reportPeriod = getReportPeriod(dateP);
 
         Integer rss = getRow(conf.getCellStartSampleName());
         Integer css = getCol(conf.getCellStartSampleName());
@@ -153,6 +160,7 @@ public class Utils {
                if (controlDate == conf.getColSpaceDate()) {
                    String datex = dataFormatter.formatCellValue(sheet.getRow(rd).getCell(cd + f));
                    dateP = processDate(datex, typeDate, conf.getStaticDate(), conf.getConditionProcess(), conf.getYear());
+                   reportPeriod = getReportPeriod(dateP);
                    controlDate = 0;
                    posDate++;
                } else {
@@ -163,6 +171,7 @@ public class Utils {
                if (controlDate == conf.getColSpaceDate()) {
                    String datex = dataFormatter.formatCellValue(sheet.getRow(rd).getCell(cd + f));
                    dateP = processDate(datex, typeDate, conf.getStaticDate(), conf.getConditionProcess(), conf.getYear());
+                   reportPeriod = getReportPeriod(dateP);
                    controlDate = conf.getColSpaceDate() - (conf.getColSpaceDate() - 1);
                    posDate++;
                } else {
@@ -210,6 +219,8 @@ public class Utils {
             //Cicle for row parameters
             GtzDestiny gtzDestiny = new GtzDestiny();
             for (int i = 0; i < conf.getNumberRowsParameter(); i++) {
+
+
                 Integer rp = getRow(conf.getCellParameter());
                 Integer cp = getCol(conf.getCellParameter());
 
@@ -222,9 +233,7 @@ public class Utils {
                 //Unidades
                 Integer rum = getRow(conf.getCellUnitMeasure());
                 Integer cum = getCol(conf.getCellUnitMeasure());
-                String valueUnitMeasure =  dataFormatter.formatCellValue(sheet.getRow(rum+i).getCell(cum));
-
-
+                String valueUnitMeasure =  dataFormatter.formatCellValue(sheet.getRow(rum+i).getCell(cum)).replace("?","μ");
 
                 //CONTROL MINIMO
                 if(category.toUpperCase().contains("MINIMO")) {
@@ -419,11 +428,17 @@ public class Utils {
                 }
 
                 gtzDestiny.setFecha_muestra(dateP);
+                gtzDestiny.setPeriodo_reporte(reportPeriod);
                 gtzDestiny.setId_tipo_punto_muestra(sampleName);
                 gtzDestiny.setLugar_muestreo(samplingLocation);
                 gtzDestiny.setSector_unidad_analisis(pointSample);
                 gtzDestiny.setNombre_archivo_excel(archivo+"-"+conf.getNameSheet());
-
+                gtzDestiny.setId_epsa(conf.getIdEpsa());
+                if(searchWords(Arrays.asList(WordPlaceSample.FUENTE), gtzDestiny.getLugar_muestreo().toUpperCase().split(" "))){
+                    gtzDestiny.setUnidad_analisis("3");
+                }else  if(searchWords(Arrays.asList(WordPlaceSample.TANQUE), gtzDestiny.getLugar_muestreo().toUpperCase().split(" "))){
+                    gtzDestiny.setUnidad_analisis("1");
+                }else if (searchWords(Arrays.asList(WordPlaceSample.RED), gtzDestiny.getLugar_muestreo().toUpperCase().split(" "))) gtzDestiny.setUnidad_analisis("2");
             }
             gtzDestinyList.add(gtzDestiny);
         }
@@ -446,6 +461,7 @@ public class Utils {
         DataFormatter dataFormatter = new DataFormatter();
         String value = dataFormatter.formatCellValue(sheet.getRow(rd).getCell(cd));
         String dateP = processDate(value,typeDate,conf.getStaticDate(),conf.getConditionProcess(),conf.getYear());
+        String reportPeriod = getReportPeriod(dateP);
 
         Integer rss = getRow(conf.getCellStartSampleName());
         Integer css = getCol(conf.getCellStartSampleName());
@@ -466,6 +482,7 @@ public class Utils {
                 if (controlDate == conf.getColSpaceDate()) {
                     String datex = dataFormatter.formatCellValue(sheet.getRow(rd).getCell(cd + f));
                     dateP = processDate(datex, typeDate, conf.getStaticDate(), conf.getConditionProcess(), conf.getYear());
+                    reportPeriod = getReportPeriod(dateP);
                     controlDate = 0;
                     posDate++;
                 } else {
@@ -476,6 +493,7 @@ public class Utils {
                 if (controlDate == conf.getColSpaceDate()) {
                     String datex = dataFormatter.formatCellValue(sheet.getRow(rd).getCell(cd + f));
                     dateP = processDate(datex, typeDate, conf.getStaticDate(), conf.getConditionProcess(), conf.getYear());
+                    reportPeriod = getReportPeriod(dateP);
                     controlDate = conf.getColSpaceDate() - (conf.getColSpaceDate() - 1);
                     posDate++;
                 } else {
@@ -535,7 +553,7 @@ public class Utils {
                 //Unidades
                 Integer rum = getRow(conf.getCellUnitMeasure());
                 Integer cum = getCol(conf.getCellUnitMeasure());
-                String valueUnitMeasure =  dataFormatter.formatCellValue(sheet.getRow(rum+i).getCell(cum));
+                String valueUnitMeasure =  dataFormatter.formatCellValue(sheet.getRow(rum+i).getCell(cum)).replace("?","μ");;
 
 
 
@@ -732,10 +750,17 @@ public class Utils {
 //                }
 
                 gtzDestiny.setFecha_muestra(dateP);
+                gtzDestiny.setPeriodo_reporte(reportPeriod);
                 gtzDestiny.setId_tipo_punto_muestra(sampleName);
                 gtzDestiny.setLugar_muestreo(samplingLocation);
                 gtzDestiny.setSector_unidad_analisis(pointSample);
                 gtzDestiny.setNombre_archivo_excel(archivo+"-"+conf.getNameSheet());
+                gtzDestiny.setId_epsa(conf.getIdEpsa());
+                if(searchWords(Arrays.asList(WordPlaceSample.FUENTE), gtzDestiny.getLugar_muestreo().toUpperCase().split(" "))){
+                    gtzDestiny.setUnidad_analisis("3");
+                }else  if(searchWords(Arrays.asList(WordPlaceSample.TANQUE), gtzDestiny.getLugar_muestreo().toUpperCase().split(" "))){
+                    gtzDestiny.setUnidad_analisis("1");
+                }else if (searchWords(Arrays.asList(WordPlaceSample.RED), gtzDestiny.getLugar_muestreo().toUpperCase().split(" "))) gtzDestiny.setUnidad_analisis("2");
 
             }
             gtzDestinyList.add(gtzDestiny);
@@ -784,6 +809,15 @@ public class Utils {
         return result;
     }
 
+    private boolean searchWords(List<String> diccionary, String input[]){
+        for(String s: input){
+            if(diccionary.contains(s)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     private String processDate(String date, String typeDate, String staticDate, String conditionProcess, String year){
         if(typeDate.equals("static")){
             return staticDate;
@@ -800,15 +834,20 @@ public class Utils {
         }else if(typeDate.equals("year")){
             return "15/12/"+year;
         }else if(typeDate.equals("month-day")){
-            return date +"/" + year;
+            String aux = date +"/" + year;
+//            String dateSrt = convertMonthDayToStrDate("d M/yyyy",aux,year);
+            return convertDate(aux);
+
+//            return date +"/" + year;
         }else if(typeDate.equals("month")){
 
-            String dateStr = "15/" +date +"/" + year;
-            dateStr = convertDateFormat(dateStr,"dd/MMM/yyyy","dd/MM/yyyy");
+            String dateStr = "15/" + date + "/" + year;
 
-            return dateStr;
+            return convertDate(dateStr);
+
         }else if(typeDate.equals("date")){
-            return date;
+
+            return convertDate(date);
         }else if(typeDate.equals("split1")){
             String v="";
             String dateStr="";
@@ -838,6 +877,57 @@ public class Utils {
         }catch(Exception e){
             return date;
         }
+    }
+
+    private String convertMonthDayToStrDate(String outputFormat, String date, String year){
+        try{
+
+         Date d = DateUtils.parseDate(date,Locale.forLanguageTag("es-ES"), new String[]{"dd MMMM/yyyy","dd MMM/yyyy"});
+         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+         String fecha = formatter.format(d);
+        return fecha;
+
+        }catch(Exception e1){
+          return date + "/"+year;
+        }
+    }
+
+    private String convertDate(String date){
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        date = date.toUpperCase().replace("FECHA DE MUESTREO","").replace(" DE ","/").replace("DE","/");
+        try {
+            Date d = DateUtils.parseDate(date.trim(), Locale.forLanguageTag("es-ES"), new String[]{"dd-MMMM-yyyy", "dd/MMM/yyyy","dd/MMMM /yyyy",
+                    "dd/ MMMM/yyyy","dd/MMMM/ yyyy", "dd/MMMM yyyy", "dd-MMM-yyyy","dd MMMM/yyyy","dd MMMM /yyyy","dd MMM/yyyy","d-M-yyyy","d-M-yy", });
+
+            return formatter.format(d);
+        } catch (ParseException e) {
+
+        }
+        try {
+            Date d2 = DateUtils.parseDate(date, new String[]{"dd-MMMM-yyyy", "dd/MMM/yyyy", "dd-MMM-yyyy","M/dd/yy","MM-dd-yyyy", "MMM/dd/yyyy", "MMM-dd-yyyy"});
+            return formatter.format(d2);
+        }catch (Exception e2){
+            return date;
+        }
+
+
+
+    }
+
+    private String getReportPeriod(String date){
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        try {
+            Date d = DateUtils.parseDate(date,new String[]{"dd/MM/yyyy"});
+            cal.setTime(d);
+            int month = cal.get(Calendar.MONTH);
+            return (month >= Calendar.JANUARY && month <= Calendar.JUNE)?"I-"+cal.get(Calendar.YEAR):"II-"+cal.get(Calendar.YEAR);
+
+        } catch (ParseException e) {
+            return "-";
+        }
+
+
     }
 
     public void exportCVS(List<GtzDestiny> gtzDestinyList, String csvFile) throws IOException {

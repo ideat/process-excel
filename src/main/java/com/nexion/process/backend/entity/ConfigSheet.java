@@ -5,7 +5,8 @@ import lombok.Data;
 @Data
 public class ConfigSheet {
 
-    private String nameSheet; 
+    private Integer idEpsa;
+    private String nameSheet;
     private String cellCategory;
     private String staticCategory;
 
